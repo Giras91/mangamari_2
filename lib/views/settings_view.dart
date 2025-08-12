@@ -81,7 +81,19 @@ class SettingsView extends ConsumerWidget {
           subtitle: const Text('Choose app theme'),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () {
-            // TODO: Implement theme settings
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Theme Settings'),
+                content: const Text('Theme selection coming soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
           },
         ),
         ListTile(
@@ -90,7 +102,19 @@ class SettingsView extends ConsumerWidget {
           subtitle: const Text('Configure reading experience'),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () {
-            // TODO: Implement reader settings
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Reader Settings'),
+                content: const Text('Reader customization coming soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ],
@@ -114,7 +138,19 @@ class SettingsView extends ConsumerWidget {
           subtitle: const Text('Manage downloaded manga'),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () {
-            // TODO: Implement downloads management
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Downloads Management'),
+                content: const Text('Downloads management coming soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
           },
         ),
         ListTile(
@@ -170,7 +206,11 @@ class SettingsView extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () {
-              // TODO: Implement cache clearing
+              // Placeholder for cache clearing logic
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Cache cleared (placeholder)')),
+              );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Cache cleared')),

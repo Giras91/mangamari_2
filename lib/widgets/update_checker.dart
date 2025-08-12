@@ -28,7 +28,7 @@ class _UpdateCheckerState extends State<UpdateChecker> {
   Future<void> _checkForUpdate() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      final currentVersion = info.version + '+' + info.buildNumber;
+      final currentVersion = '${info.version}+${info.buildNumber}';
 
       final response = await http.get(Uri.parse(widget.versionJsonUrl));
       if (response.statusCode == 200) {
@@ -92,8 +92,11 @@ class _UpdateCheckerState extends State<UpdateChecker> {
           label: const Text('Download APK'),
           onPressed: () async {
             if (apkUrl != null) {
+              final dialogContext = context;
               await launchUrl(Uri.parse(apkUrl!), mode: LaunchMode.externalApplication);
-              Navigator.of(context).pop();
+              if (mounted) {
+                Navigator.of(dialogContext).pop();
+              }
             }
           },
         ),
