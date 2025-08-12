@@ -1,6 +1,8 @@
 # mangamari
 
-A new Flutter project.
+MangaMari is your all-in-one manga reading companion, designed for speed, simplicity, and personalization. Paste your favorite manga site’s URL, and MangaMari will automatically fetch and display chapters in a clean, distraction-free interface. With support for multiple AI providers, you can enhance your reading experience with instant translations, summaries, or character insights — all within the app.
+
+MangaMari also features version-controlled updates for stability, a donation option to keep the project thriving, and offline-ready performance for uninterrupted reading anywhere. Whether you’re exploring the latest releases or diving into timeless classics, MangaMari makes manga reading smarter and smoother.
 
 ## Getting Started
 
