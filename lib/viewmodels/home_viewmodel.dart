@@ -1,14 +1,11 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/manga.dart';
-import '../data/manga_repository.dart';
-import '../source_extensions/source_loader.dart';
-export 'package:flutter_riverpod/flutter_riverpod.dart' show StateProvider;
-final cacheDurationProvider = StateProvider<int>((ref) => 5);
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/manga.dart';
 import '../data/manga_repository.dart';
 import '../source_extensions/source_loader.dart';
+export 'package:flutter_riverpod/flutter_riverpod.dart' show StateProvider;
+
+final cacheDurationProvider = StateProvider<int>((ref) => 5);
 
 final customEndpointProvider = StateProvider<String>((ref) => '');
 
