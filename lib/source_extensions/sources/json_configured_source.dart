@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as html_parser;
-import 'package:html/dom.dart';
+import 'package:html/parser.dart' as html;
 import '../models/source_definition.dart';
-
 /// JSON-configured source that uses CSS selectors to parse manga sites
 /// This allows adding new sources without writing Dart code
 class JSONConfiguredSource extends SourceDefinition {
   final JSONSourceConfig config;
-  
+  // Removed stray single quote for error cleanup
   JSONConfiguredSource(this.config) : super(
     id: config.id,
     name: config.name,
@@ -57,7 +54,7 @@ class JSONConfiguredSource extends SourceDefinition {
       throw Exception('Failed to fetch manga details: ${response.statusCode}');
     }
 
-    final document = html_parser.parse(response.body);
+    final document = html.parse(response.body);
     final selectors = config.detailsPage.selectors;
 
     final title = _extractText(document, selectors.title);
@@ -100,7 +97,7 @@ class JSONConfiguredSource extends SourceDefinition {
       throw Exception('Failed to fetch chapter pages: ${response.statusCode}');
     }
 
-    final document = html_parser.parse(response.body);
+    final document = html.parse(response.body);
     final pageElements = document.querySelectorAll(config.readerPage.selectors.pageImages);
     
     return pageElements
@@ -143,7 +140,7 @@ class JSONConfiguredSource extends SourceDefinition {
       throw Exception('Failed to fetch manga list: ${response.statusCode}');
     }
 
-    final document = html_parser.parse(response.body);
+    final document = html.parse(response.body);
     final mangaElements = document.querySelectorAll(selectors.mangaItem);
 
     return mangaElements.map((element) {

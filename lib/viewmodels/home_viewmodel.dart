@@ -2,7 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/manga.dart';
 import '../data/manga_repository.dart';
-import '../source_extensions/source_loader.dart';
+import '../source_extensions/enhanced_source_loader.dart';
 export 'package:flutter_riverpod/flutter_riverpod.dart' show StateProvider;
 
 final cacheDurationProvider = StateProvider<int>((ref) => 5);
@@ -59,7 +59,7 @@ class BookmarksNotifier extends StateNotifier<Set<String>> {
 
 enum MangaCategory { latest, popular, trending }
 
-final sourceLoaderProvider = Provider<SourceLoader>((ref) => SourceLoader());
+final sourceLoaderProvider = Provider<EnhancedSourceLoader>((ref) => EnhancedSourceLoader());
 final mangaRepositoryProvider = Provider<MangaRepository>((ref) => MangaRepository(loader: ref.read(sourceLoaderProvider)));
 
 final searchQueryProvider = StateProvider<String>((ref) => '');

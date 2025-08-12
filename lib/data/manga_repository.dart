@@ -1,8 +1,8 @@
 import '../models/manga.dart';
-import '../source_extensions/source_loader.dart';
+import '../source_extensions/enhanced_source_loader.dart';
 
 class MangaRepository {
-  final SourceLoader loader;
+  final EnhancedSourceLoader loader;
 
   MangaRepository({required this.loader});
 
@@ -12,8 +12,8 @@ class MangaRepository {
     MangaSourceType sourceType = MangaSourceType.jikan,
   }) async {
     return await loader.fetchFromSource(
-      query: query,
-      category: category,
+      query: query ?? '',
+      category: category ?? 'latest',
       sourceType: sourceType,
     );
   }

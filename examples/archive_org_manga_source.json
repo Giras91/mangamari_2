@@ -1,0 +1,52 @@
+{
+  "id": "archive_org_manga",
+  "name": "Archive.org Manga Collection",
+  "version": "1.0.0",
+  "baseUrl": "https://archive.org",
+  "language": "en",
+  "isNsfw": false,
+  "supportedFeatures": ["latest", "search"],
+  
+  "latestPage": {
+    "url": "{baseUrl}/search.php?query=manga&sort=-date&page={page}",
+    "selectors": {
+      "mangaItem": ".item-ia",
+      "title": ".ttl a",
+      "url": ".ttl a",
+      "coverImage": ".item-img img",
+      "description": ".item-desc"
+    }
+  },
+  
+  "searchPage": {
+    "url": "{baseUrl}/search.php?query={query}+manga&sort=-date&page={page}",
+    "selectors": {
+      "mangaItem": ".item-ia",
+      "title": ".ttl a",
+      "url": ".ttl a",
+      "coverImage": ".item-img img",
+      "description": ".item-desc"
+    }
+  },
+  
+  "detailsPage": {
+    "selectors": {
+      "title": ".breadcrumbs h1",
+      "description": ".item-details-about .content",
+      "coverImage": ".theatre-ia-wrap .theatre-ia img",
+      "status": null,
+      "author": ".metadata-definition dt:contains('Creator') + dd",
+      "genres": ".metadata-definition dt:contains('Subject') + dd a",
+      "chapterList": ".download-pill a[href*='.pdf'], .download-pill a[href*='.cbr'], .download-pill a[href*='.cbz']",
+      "chapterTitle": null,
+      "chapterUrl": null,
+      "chapterNumber": null
+    }
+  },
+  
+  "readerPage": {
+    "selectors": {
+      "pageImages": ".BookReader img"
+    }
+  }
+}

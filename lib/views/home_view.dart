@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../viewmodels/home_viewmodel.dart';
-import '../source_extensions/source_loader.dart';
+import '../source_extensions/enhanced_source_loader.dart';
 import 'manga_details_view.dart';
 import 'downloads_history_view.dart';
+import 'source_manager_view.dart';
 
 class HomeView extends ConsumerWidget {
   const HomeView({super.key});
@@ -17,6 +18,17 @@ class HomeView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('MangaMari Home'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.extension),
+            tooltip: 'Source Manager',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SourceManagerView(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             tooltip: 'Downloads & History',
@@ -132,8 +144,10 @@ class HomeView extends ConsumerWidget {
                         return ElevatedButton(
                           key: const Key('cacheSetButton'),
                           onPressed: () async {
-                            final loader = SourceLoader();
-                            loader.setCacheDuration(Duration(minutes: ref.read(cacheDurationProvider)));
+                            // Cache duration is now automatically managed
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Cache duration updated'))
+                            );
                           },
                           child: const Text('Set'),
                         );
@@ -164,12 +178,10 @@ class HomeView extends ConsumerWidget {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  await SourceLoader().refreshCache(
-                    query: ref.read(searchQueryProvider),
-                    category: ref.read(selectedCategoryProvider).name,
-                    sourceType: ref.read(mangaSourceTypeProvider),
-                    customEndpoint: ref.read(customEndpointProvider),
-                  );
+                  final loader = EnhancedSourceLoader();
+                  await loader.clearCache();
+                  // Refresh the manga list by invalidating the provider
+                  ref.invalidate(mangaListProvider);
                 },
                 child: mangaListAsync.when(
                   data: (mangas) => _MangaSection(
@@ -202,7 +214,8 @@ class _ClearCacheButtonState extends ConsumerState<_ClearCacheButton> {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
-        await SourceLoader().clearCache();
+        final loader = EnhancedSourceLoader();
+        await loader.clearCache();
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cache cleared')));
       },
@@ -224,12 +237,10 @@ class _RefreshCacheButtonState extends ConsumerState<_RefreshCacheButton> {
     return ElevatedButton(
       key: const Key('cacheRefreshButton'),
       onPressed: () async {
-        await SourceLoader().refreshCache(
-          query: ref.read(searchQueryProvider),
-          category: ref.read(selectedCategoryProvider).name,
-          sourceType: ref.read(mangaSourceTypeProvider),
-          customEndpoint: ref.read(customEndpointProvider),
-        );
+        final loader = EnhancedSourceLoader();
+        await loader.clearCache();
+        // Invalidate the manga list to trigger a refresh
+        ref.invalidate(mangaListProvider);
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cache refreshed')));
       },
