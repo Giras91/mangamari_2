@@ -2,6 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/manga.dart';
 import '../data/manga_repository.dart';
 import '../source_extensions/source_loader.dart';
+export 'package:flutter_riverpod/flutter_riverpod.dart' show StateProvider;
+final cacheDurationProvider = StateProvider<int>((ref) => 5);
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/manga.dart';
+import '../data/manga_repository.dart';
+import '../source_extensions/source_loader.dart';
+
+final customEndpointProvider = StateProvider<String>((ref) => '');
 
 final downloadsProvider = StateNotifierProvider<DownloadsNotifier, Set<String>>((ref) => DownloadsNotifier());
 final historyProvider = StateNotifierProvider<HistoryNotifier, List<String>>((ref) => HistoryNotifier());
@@ -59,10 +68,16 @@ final mangaRepositoryProvider = Provider<MangaRepository>((ref) => MangaReposito
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final selectedCategoryProvider = StateProvider<MangaCategory>((ref) => MangaCategory.latest);
 
+final mangaSourceTypeProvider = StateProvider<MangaSourceType>((ref) => MangaSourceType.jikan);
+
 final mangaListProvider = FutureProvider.autoDispose<List<Manga>>((ref) async {
   final repo = ref.read(mangaRepositoryProvider);
   final query = ref.watch(searchQueryProvider);
   final category = ref.watch(selectedCategoryProvider);
-  // For demo, category is not used in API, but can be mapped to query or endpoint
-  return await repo.fetchMangaList(query: query, category: category.name);
+  final sourceType = ref.watch(mangaSourceTypeProvider);
+  return await repo.fetchMangaList(
+    query: query,
+    category: category.name,
+    sourceType: sourceType,
+  );
 });

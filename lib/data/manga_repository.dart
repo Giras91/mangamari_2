@@ -6,8 +6,15 @@ class MangaRepository {
 
   MangaRepository({required this.loader});
 
-  Future<List<Manga>> fetchMangaList({String? query, String? category}) async {
-    // Use the real loader integration
-    return await loader.fetchFromOpenSource(query: query, category: category);
+  Future<List<Manga>> fetchMangaList({
+    String? query,
+    String? category,
+    MangaSourceType sourceType = MangaSourceType.jikan,
+  }) async {
+    return await loader.fetchFromSource(
+      query: query,
+      category: category,
+      sourceType: sourceType,
+    );
   }
 }

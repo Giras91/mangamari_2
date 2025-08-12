@@ -1,3 +1,28 @@
+  testWidgets('HomeView switches sources and shows custom endpoint field', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
+    // Open source dropdown and select 'custom'
+    await tester.tap(find.byType(DropdownButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('custom').last);
+    await tester.pumpAndSettle();
+    // Custom endpoint field should appear
+    expect(find.byType(TextField), findsWidgets); // At least two: search and endpoint
+    expect(find.widgetWithText(TextField, 'Custom Endpoint URL'), findsOneWidget);
+  });
+
+  testWidgets('HomeView shows error on invalid custom endpoint', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
+    // Select custom source
+    await tester.tap(find.byType(DropdownButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('custom').last);
+    await tester.pumpAndSettle();
+    // Enter invalid endpoint
+    await tester.enterText(find.widgetWithText(TextField, 'Custom Endpoint URL'), 'https://invalid.endpoint');
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.textContaining('Error loading manga'), findsOneWidget);
+  });
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,9 +35,30 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
     expect(find.byType(TextField), findsOneWidget);
     expect(find.byType(ChoiceChip), findsNWidgets(3));
-  expect(find.widgetWithText(ChoiceChip, 'Latest'), findsOneWidget);
-  expect(find.widgetWithText(ChoiceChip, 'Popular'), findsOneWidget);
-  expect(find.widgetWithText(ChoiceChip, 'Trending'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Latest'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Popular'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Trending'), findsOneWidget);
+  });
+
+  testWidgets('HomeView switches sources and shows custom endpoint field', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
+    await tester.tap(find.byType(DropdownButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('custom').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsWidgets); // At least two: search and endpoint
+    expect(find.widgetWithText(TextField, 'Custom Endpoint URL'), findsOneWidget);
+  });
+
+  testWidgets('HomeView shows error on invalid custom endpoint', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
+    await tester.tap(find.byType(DropdownButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('custom').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Custom Endpoint URL'), 'https://invalid.endpoint');
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.textContaining('Error loading manga'), findsOneWidget);
   });
 
   testWidgets('MangaDetailsView displays manga info and chapters', (WidgetTester tester) async {
@@ -26,7 +72,7 @@ void main() {
       ],
     );
     await tester.pumpWidget(ProviderScope(child: MaterialApp(home: MangaDetailsView(manga: manga))));
-  expect(find.text('Test Manga'), findsWidgets);
+    expect(find.text('Test Manga'), findsWidgets);
     expect(find.text('A test manga description.'), findsOneWidget);
     expect(find.text('Chapter 1: Chapter One'), findsOneWidget);
     expect(find.text('Chapter 2: Chapter Two'), findsOneWidget);
