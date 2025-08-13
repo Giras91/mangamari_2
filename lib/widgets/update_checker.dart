@@ -5,6 +5,20 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UpdateChecker extends StatefulWidget {
+  /// Compares two semantic version strings (e.g. '1.2.3+4').
+  /// Returns 1 if [a] > [b], -1 if [a] < [b], 0 if equal.
+  static int compareVersions(String a, String b) {
+    final aParts = a.split(RegExp(r'[.+]')).map(int.parse).toList();
+    final bParts = b.split(RegExp(r'[.+]')).map(int.parse).toList();
+    final len = aParts.length > bParts.length ? aParts.length : bParts.length;
+    for (int i = 0; i < len; i++) {
+      final aVal = i < aParts.length ? aParts[i] : 0;
+      final bVal = i < bParts.length ? bParts[i] : 0;
+      if (aVal > bVal) return 1;
+      if (aVal < bVal) return -1;
+    }
+    return 0;
+  }
   final String versionJsonUrl;
   const UpdateChecker({super.key, required this.versionJsonUrl});
 
@@ -37,7 +51,8 @@ class _UpdateCheckerState extends State<UpdateChecker> {
         apkUrl = data['apk_url'];
         changelog = data['changelog'];
 
-        if (_isNewerVersion(latestVersion!, currentVersion)) {
+        final cmp = UpdateChecker.compareVersions(latestVersion!, currentVersion);
+        if (cmp > 0) {
           setState(() {
             updateAvailable = true;
             checked = true;
@@ -55,15 +70,6 @@ class _UpdateCheckerState extends State<UpdateChecker> {
     }
   }
 
-  bool _isNewerVersion(String latest, String current) {
-    final latestParts = latest.split(RegExp(r'[.+]')).map(int.parse).toList();
-    final currentParts = current.split(RegExp(r'[.+]')).map(int.parse).toList();
-    for (int i = 0; i < latestParts.length; i++) {
-      if (i >= currentParts.length || latestParts[i] > currentParts[i]) return true;
-      if (latestParts[i] < currentParts[i]) return false;
-    }
-    return false;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,11 +98,8 @@ class _UpdateCheckerState extends State<UpdateChecker> {
           label: const Text('Download APK'),
           onPressed: () async {
             if (apkUrl != null) {
-              final dialogContext = context;
+              Navigator.of(context).pop();
               await launchUrl(Uri.parse(apkUrl!), mode: LaunchMode.externalApplication);
-              if (mounted) {
-                Navigator.of(dialogContext).pop();
-              }
             }
           },
         ),
