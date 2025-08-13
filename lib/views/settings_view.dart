@@ -47,6 +47,7 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
         ListTile(
+          key: const ValueKey('settings-manage-sources'),
           leading: const Icon(Icons.source),
           title: const Text('Manage Sources'),
           subtitle: const Text('Add, remove, and configure manga sources'),
@@ -54,6 +55,7 @@ class SettingsView extends ConsumerWidget {
           onTap: () => AppRoutes.navigateToSourceManager(context),
         ),
         ListTile(
+          key: const ValueKey('settings-ai-source-generator'),
           leading: const Icon(Icons.auto_fix_high),
           title: const Text('AI Source Generator'),
           subtitle: const Text('Create custom sources using AI'),
@@ -76,6 +78,7 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
         ListTile(
+          key: const ValueKey('settings-theme'),
           leading: const Icon(Icons.palette),
           title: const Text('Theme'),
           subtitle: const Text('Choose app theme'),
@@ -88,6 +91,7 @@ class SettingsView extends ConsumerWidget {
                 content: const Text('Theme selection coming soon.'),
                 actions: [
                   TextButton(
+                    key: const ValueKey('settings-theme-ok'),
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('OK'),
                   ),
@@ -97,6 +101,7 @@ class SettingsView extends ConsumerWidget {
           },
         ),
         ListTile(
+          key: const ValueKey('settings-reader-settings'),
           leading: const Icon(Icons.menu_book),
           title: const Text('Reader Settings'),
           subtitle: const Text('Configure reading experience'),
@@ -109,6 +114,7 @@ class SettingsView extends ConsumerWidget {
                 content: const Text('Reader customization coming soon.'),
                 actions: [
                   TextButton(
+                    key: const ValueKey('settings-reader-ok'),
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('OK'),
                   ),
@@ -133,6 +139,7 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
         ListTile(
+          key: const ValueKey('settings-downloads'),
           leading: const Icon(Icons.download),
           title: const Text('Downloads'),
           subtitle: const Text('Manage downloaded manga'),
@@ -145,6 +152,7 @@ class SettingsView extends ConsumerWidget {
                 content: const Text('Downloads management coming soon.'),
                 actions: [
                   TextButton(
+                    key: const ValueKey('settings-downloads-ok'),
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('OK'),
                   ),
@@ -154,6 +162,7 @@ class SettingsView extends ConsumerWidget {
           },
         ),
         ListTile(
+          key: const ValueKey('settings-clear-cache'),
           leading: const Icon(Icons.clear_all),
           title: const Text('Clear Cache'),
           subtitle: const Text('Free up storage space'),
@@ -176,6 +185,7 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
         ListTile(
+          key: const ValueKey('settings-about'),
           leading: const Icon(Icons.info),
           title: const Text('About MangaMari'),
           subtitle: const Text('Version 1.0.0'),
@@ -183,6 +193,7 @@ class SettingsView extends ConsumerWidget {
           onTap: () => _showAboutDialog(context),
         ),
         ListTile(
+          key: const ValueKey('settings-legal'),
           leading: const Icon(Icons.gavel),
           title: const Text('Legal'),
           subtitle: const Text('Terms, privacy, and licenses'),
@@ -201,10 +212,12 @@ class SettingsView extends ConsumerWidget {
         content: const Text('This will clear all cached manga data. This action cannot be undone.'),
         actions: [
           TextButton(
+            key: const ValueKey('settings-clear-cache-cancel'),
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
           FilledButton(
+            key: const ValueKey('settings-clear-cache-confirm'),
             onPressed: () {
               // Placeholder for cache clearing logic
               Navigator.pop(context);

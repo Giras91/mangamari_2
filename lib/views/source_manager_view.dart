@@ -45,11 +45,13 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
         title: const Text('Source Manager'),
         actions: [
           IconButton(
+            key: const ValueKey('settingsButton'),
             icon: const Icon(Icons.settings),
             onPressed: () => _showComplianceSettings(),
             tooltip: 'Compliance Settings',
           ),
           IconButton(
+            key: const ValueKey('installButton'),
             icon: const Icon(Icons.add),
             onPressed: () => _showInstallDialog(),
             tooltip: 'Install Source',
@@ -79,6 +81,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
             const Text('No sources installed'),
             const SizedBox(height: 16),
             ElevatedButton.icon(
+              key: const ValueKey('installSourceButton'),
               onPressed: () => _showInstallDialog(),
               icon: const Icon(Icons.add),
               label: const Text('Install Source'),
@@ -115,6 +118,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
+        key: ValueKey('sourceCard_${source.id}'),
         leading: CircleAvatar(
           backgroundColor: metadata.isEnabled ? Colors.green : Colors.grey,
           child: Icon(
@@ -140,6 +144,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
           ],
         ),
         trailing: PopupMenuButton<String>(
+          key: ValueKey('sourceCardMenu_${source.id}'),
           onSelected: (action) => _handleSourceAction(action, source, metadata),
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -225,10 +230,12 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
         ),
         actions: [
           TextButton(
+            key: const ValueKey('installDialogCancel'),
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            key: const ValueKey('installDialogConfirm'),
             onPressed: _isInstalling ? null : _installSource,
             child: _isInstalling 
                 ? const SizedBox(
@@ -249,6 +256,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
       child: Column(
         children: [
           TextField(
+            key: const ValueKey('installUrlField'),
             controller: _urlController,
             decoration: const InputDecoration(
               labelText: 'Source URL',
@@ -276,6 +284,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
         children: [
           Expanded(
             child: TextField(
+              key: const ValueKey('installJsonField'),
               controller: _jsonController,
               decoration: const InputDecoration(
                 labelText: 'JSON Configuration',
@@ -479,6 +488,7 @@ class _ComplianceSettingsDialogState extends ConsumerState<ComplianceSettingsDia
         mainAxisSize: MainAxisSize.min,
         children: [
           SwitchListTile(
+            key: const ValueKey('complianceUnknownSwitch'),
             title: const Text('Allow Unknown Sources'),
             subtitle: const Text('Allow sources that haven\'t been verified'),
             value: _settings.allowUnknownSources,
@@ -487,6 +497,7 @@ class _ComplianceSettingsDialogState extends ConsumerState<ComplianceSettingsDia
             }),
           ),
           SwitchListTile(
+            key: const ValueKey('complianceUnsafeSwitch'),
             title: const Text('Allow Unsafe Sources'),
             subtitle: const Text('Allow sources known to have copyrighted content'),
             value: _settings.allowUnsafeSources,
@@ -495,6 +506,7 @@ class _ComplianceSettingsDialogState extends ConsumerState<ComplianceSettingsDia
             }),
           ),
           SwitchListTile(
+            key: const ValueKey('complianceWarningSwitch'),
             title: const Text('Show Warnings'),
             subtitle: const Text('Display compliance warnings'),
             value: _settings.showWarnings,
@@ -506,10 +518,12 @@ class _ComplianceSettingsDialogState extends ConsumerState<ComplianceSettingsDia
       ),
       actions: [
         TextButton(
+          key: const ValueKey('complianceCancel'),
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
+          key: const ValueKey('complianceSave'),
           onPressed: () async {
             await manager.updateComplianceSettings(_settings);
             if (!mounted) return;

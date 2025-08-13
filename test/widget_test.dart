@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangamari/views/home_view.dart';
 import 'package:mangamari/views/manga_details_view.dart';
 import 'package:mangamari/models/manga.dart';
-import 'package:mangamari/source_extensions/source_loader.dart' show MangaSourceType;
+import 'package:mangamari/source_extensions/enhanced_source_loader.dart' show MangaSourceType;
 import 'package:mangamari/viewmodels/home_viewmodel.dart' as vm;
+import 'package:mangamari/viewmodels/home_viewmodel.dart' show mangaSourceTypeProvider;
 
 void main() {
+  setUpAll(() async {
+    final dir = Directory('./test_hive');
+    if (!dir.existsSync()) dir.createSync();
+    Hive.init(dir.path);
+    // Register Hive adapters here if needed
+  });
   testWidgets('HomeView displays category chips and search bar', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: MaterialApp(home: HomeView())));
     expect(find.byType(TextField), findsOneWidget);
@@ -21,11 +30,16 @@ void main() {
     await tester.pumpWidget(ProviderScope(
       overrides: [
         vm.mangaListProvider.overrideWith((ref) async => <Manga>[]),
+        mangaSourceTypeProvider.overrideWith((ref) => MangaSourceType.values.first),
       ],
       child: const MaterialApp(home: HomeView()),
     ));
-    await tester.pump();
-    await tester.tap(find.byType(DropdownButton<MangaSourceType>));
+    await tester.pumpAndSettle(); // Ensure widget tree is fully built
+    debugDumpApp(); // Print widget tree to console
+    final dropdownFinder = find.byKey(const Key('sourceDropdown'));
+    debugPrint('DropdownButton widgets by key: ${tester.widgetList(dropdownFinder)}');
+    expect(dropdownFinder, findsOneWidget);
+    await tester.tap(dropdownFinder);
     await tester.pump();
     await tester.tap(find.text('custom').last);
     await tester.pump();

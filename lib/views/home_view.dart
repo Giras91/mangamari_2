@@ -76,6 +76,7 @@ class HomeView extends ConsumerWidget {
                   builder: (context, ref, _) {
                     final sourceType = ref.watch(mangaSourceTypeProvider);
                     return DropdownButton<MangaSourceType>(
+                      key: const Key('sourceDropdown'),
                       value: sourceType,
                       items: MangaSourceType.values.map((type) {
                         return DropdownMenuItem(
