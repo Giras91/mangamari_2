@@ -1,74 +1,129 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../source_extensions/manager/source_manager.dart';
-import '../source_extensions/models/source_definition.dart';
-import '../source_extensions/compliance/legal_compliance_checker.dart';
+  // Clean reset of file to fix broken structure
+  import 'package:flutter/material.dart';
+  import 'package:flutter_riverpod/flutter_riverpod.dart';
+  import '../source_extensions/manager/source_manager.dart';
+  import '../source_extensions/models/source_definition.dart';
+  import '../source_extensions/compliance/legal_compliance_checker.dart';
 
-/// Provider for SourceManager instance
-final sourceManagerProvider = Provider<SourceManager>((ref) => SourceManager());
+  final sourceManagerProvider = Provider<SourceManager>((ref) => SourceManager());
+  final installedSourcesProvider = FutureProvider<List<SourceDefinition>>((ref) async {
+    final manager = ref.read(sourceManagerProvider);
+    return manager.installedSources;
+  });
+  final sourceMetadataProvider = Provider<List<SourceMetadata>>((ref) {
+    final manager = ref.read(sourceManagerProvider);
+    return manager.sourceMetadata;
+  });
 
-/// Provider for installed sources
-final installedSourcesProvider = FutureProvider<List<SourceDefinition>>((ref) async {
-  final manager = ref.read(sourceManagerProvider);
-  await manager.initialize();
-  return manager.installedSources;
-});
+  class SourceManagerView extends ConsumerStatefulWidget {
+    const SourceManagerView({super.key});
 
-/// Provider for source metadata
-final sourceMetadataProvider = FutureProvider<List<SourceMetadata>>((ref) async {
-  final manager = ref.read(sourceManagerProvider);
-  await manager.initialize();
-  return manager.sourceMetadata;
-});
+    @override
+    ConsumerState<SourceManagerView> createState() => _SourceManagerViewState();
+  }
 
-/// Source Manager UI - allows users to install, update, and manage sources
-class SourceManagerView extends ConsumerStatefulWidget {
-  const SourceManagerView({super.key});
-
-  @override
-  ConsumerState<SourceManagerView> createState() => _SourceManagerViewState();
-}
-
-class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
-  final _urlController = TextEditingController();
-  final _jsonController = TextEditingController();
+  class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
+  // ...existing code...
+  final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _jsonController = TextEditingController();
   bool _isInstalling = false;
   String? _installMessage;
 
-  @override
-  Widget build(BuildContext context) {
-    final installedSourcesAsync = ref.watch(installedSourcesProvider);
-    final sourceMetadataAsync = ref.watch(sourceMetadataProvider);
+    @override
+    Widget build(BuildContext context) {
+      final installedSourcesAsync = ref.watch(installedSourcesProvider);
+      final metadata = ref.watch(sourceMetadataProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Source Manager'),
-        actions: [
-          IconButton(
-            key: const ValueKey('settingsButton'),
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showComplianceSettings(),
-            tooltip: 'Compliance Settings',
-          ),
-          IconButton(
-            key: const ValueKey('installButton'),
-            icon: const Icon(Icons.add),
-            onPressed: () => _showInstallDialog(),
-            tooltip: 'Install Source',
-          ),
-        ],
-      ),
-      body: installedSourcesAsync.when(
-        data: (sources) => sourceMetadataAsync.when(
-          data: (metadata) => _buildSourceList(sources, metadata),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(child: Text('Error loading metadata: $error')),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Source Manager'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: 'Compliance Settings',
+              onPressed: _showComplianceSettings,
+            ),
+          ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error loading sources: $error')),
-      ),
-    );
-  }
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: DropdownButton<SourceType>(
+                key: const ValueKey('sourceDropdown'),
+                value: SourceType.jsonConfigured,
+                items: SourceType.values
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t.name)))
+                    .toList(),
+                onChanged: (_) {},
+                hint: const Text('Select Source Type'),
+              ),
+            ),
+            Expanded(
+              child: installedSourcesAsync.when(
+                data: (sources) => _buildSourceList(sources, metadata),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('Error loading sources: $e')),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    void _showInstallDialog() {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Install Source'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const TabBar(
+                    tabs: [
+                      Tab(text: 'From URL'),
+                      Tab(text: 'From JSON'),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 300,
+                    child: TabBarView(
+                      children: [
+                        _buildUrlInstallTab(),
+                        _buildJsonInstallTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              key: const ValueKey('installDialogCancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              key: const ValueKey('installDialogConfirm'),
+              onPressed: _isInstalling ? null : _installSource,
+              child: _isInstalling 
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Install'),
+            ),
+          ],
+        ),
+      );
+    }
+
+  // ...existing code...
 
   Widget _buildSourceList(List<SourceDefinition> sources, List<SourceMetadata> metadata) {
     if (sources.isEmpty) {
@@ -82,7 +137,7 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               key: const ValueKey('installSourceButton'),
-              onPressed: () => _showInstallDialog(),
+              onPressed: _showInstallDialog,
               icon: const Icon(Icons.add),
               label: const Text('Install Source'),
             ),
@@ -106,7 +161,6 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
             installedAt: DateTime.now(),
           ),
         );
-
         return _buildSourceCard(source, meta);
       },
     );
@@ -114,7 +168,6 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
 
   Widget _buildSourceCard(SourceDefinition source, SourceMetadata metadata) {
     final complianceResult = LegalComplianceChecker.checkCompliance(source.baseUrl);
-    
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
@@ -178,77 +231,25 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
     }
   }
 
-  void _handleSourceAction(String action, SourceDefinition source, SourceMetadata metadata) async {
+  void _handleSourceAction(String action, SourceDefinition s, SourceMetadata m) async {
     final manager = ref.read(sourceManagerProvider);
-    
     switch (action) {
       case 'enable':
       case 'disable':
-        await manager.setSourceEnabled(source.id, action == 'enable');
+        await manager.setSourceEnabled(s.id, action == 'enable');
         ref.invalidate(installedSourcesProvider);
         ref.invalidate(sourceMetadataProvider);
         break;
       case 'update':
-        await _updateSource(source.id);
+        await _updateSource(s.id);
         break;
       case 'uninstall':
-        await _uninstallSource(source.id);
+        await _uninstallSource(s.id);
         break;
     }
   }
 
-  void _showInstallDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Install Source'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: DefaultTabController(
-            length: 2,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const TabBar(
-                  tabs: [
-                    Tab(text: 'From URL'),
-                    Tab(text: 'From JSON'),
-                  ],
-                ),
-                SizedBox(
-                  height: 300,
-                  child: TabBarView(
-                    children: [
-                      _buildUrlInstallTab(),
-                      _buildJsonInstallTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('installDialogCancel'),
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            key: const ValueKey('installDialogConfirm'),
-            onPressed: _isInstalling ? null : _installSource,
-            child: _isInstalling 
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Install'),
-          ),
-        ],
-      ),
-    );
-  }
+  // ...existing code...
 
   Widget _buildUrlInstallTab() {
     return Padding(
@@ -336,11 +337,9 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
     if (result.success) {
       ref.invalidate(installedSourcesProvider);
       ref.invalidate(sourceMetadataProvider);
-      
       if (result.complianceWarning != null) {
         _showComplianceWarning(result.complianceWarning!);
       }
-      
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.of(context).pop();
@@ -368,7 +367,59 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
   void _showComplianceSettings() {
     showDialog(
       context: context,
-      builder: (context) => const ComplianceSettingsDialog(),
+      builder: (context) => _complianceSettingsDialog(),
+    );
+  }
+
+  Widget _complianceSettingsDialog() {
+    final manager = ref.read(sourceManagerProvider);
+    var settings = manager.complianceSettings;
+    return StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('Compliance Settings'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SwitchListTile(
+              key: const ValueKey('complianceUnknownSwitch'),
+              title: const Text('Allow Unknown Sources'),
+              subtitle: const Text("Allow sources that haven't been verified"),
+              value: settings.allowUnknownSources,
+              onChanged: (v) => setState(() => settings = settings.copyWith(allowUnknownSources: v)),
+            ),
+            SwitchListTile(
+              key: const ValueKey('complianceUnsafeSwitch'),
+              title: const Text('Allow Unsafe Sources'),
+              subtitle: const Text('Allow sources known to have copyrighted content'),
+              value: settings.allowUnsafeSources,
+              onChanged: (v) => setState(() => settings = settings.copyWith(allowUnsafeSources: v)),
+            ),
+            SwitchListTile(
+              key: const ValueKey('complianceWarningSwitch'),
+              title: const Text('Show Warnings'),
+              subtitle: const Text('Display compliance warnings'),
+              value: settings.showWarnings,
+              onChanged: (v) => setState(() => settings = settings.copyWith(showWarnings: v)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('complianceCancel'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            key: const ValueKey('complianceSave'),
+            onPressed: () async {
+              await manager.updateComplianceSettings(settings);
+              if (!mounted) return;
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -405,7 +456,6 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
   Future<void> _updateSource(String sourceId) async {
     final manager = ref.read(sourceManagerProvider);
     final result = await manager.updateSource(sourceId);
-    
     if (!mounted) return;
     if (result.success) {
       ref.invalidate(installedSourcesProvider);
@@ -438,7 +488,6 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
         ],
       ),
     );
-
     if (!mounted) return;
     if (confirmed == true) {
       final manager = ref.read(sourceManagerProvider);
@@ -466,73 +515,68 @@ class _SourceManagerViewState extends ConsumerState<SourceManagerView> {
   }
 }
 
-/// Dialog for compliance settings
-class ComplianceSettingsDialog extends ConsumerStatefulWidget {
-  const ComplianceSettingsDialog({super.key});
-
-  @override
-  ConsumerState<ComplianceSettingsDialog> createState() => _ComplianceSettingsDialogState();
-}
-
-class _ComplianceSettingsDialogState extends ConsumerState<ComplianceSettingsDialog> {
-  late UserComplianceSettings _settings;
-
-  @override
-  Widget build(BuildContext context) {
-    final manager = ref.read(sourceManagerProvider);
-    _settings = manager.complianceSettings;
-
-    return AlertDialog(
-      title: const Text('Compliance Settings'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SwitchListTile(
-            key: const ValueKey('complianceUnknownSwitch'),
-            title: const Text('Allow Unknown Sources'),
-            subtitle: const Text('Allow sources that haven\'t been verified'),
-            value: _settings.allowUnknownSources,
-            onChanged: (value) => setState(() {
-              _settings = _settings.copyWith(allowUnknownSources: value);
-            }),
+  void _showInstallDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Install Source'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const TabBar(
+                  tabs: [
+                    Tab(text: 'From URL'),
+                    Tab(text: 'From JSON'),
+                  ],
+                ),
+                SizedBox(
+                  height: 300,
+                  child: TabBarView(
+                    children: [
+                      _buildUrlInstallTab(),
+                      _buildJsonInstallTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          SwitchListTile(
-            key: const ValueKey('complianceUnsafeSwitch'),
-            title: const Text('Allow Unsafe Sources'),
-            subtitle: const Text('Allow sources known to have copyrighted content'),
-            value: _settings.allowUnsafeSources,
-            onChanged: (value) => setState(() {
-              _settings = _settings.copyWith(allowUnsafeSources: value);
-            }),
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('installDialogCancel'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
-          SwitchListTile(
-            key: const ValueKey('complianceWarningSwitch'),
-            title: const Text('Show Warnings'),
-            subtitle: const Text('Display compliance warnings'),
-            value: _settings.showWarnings,
-            onChanged: (value) => setState(() {
-              _settings = _settings.copyWith(showWarnings: value);
-            }),
+          ElevatedButton(
+            key: const ValueKey('installDialogConfirm'),
+            onPressed: _isInstalling ? null : _installSource,
+            child: _isInstalling 
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Install'),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          key: const ValueKey('complianceCancel'),
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          key: const ValueKey('complianceSave'),
-          onPressed: () async {
-            await manager.updateComplianceSettings(_settings);
-            if (!mounted) return;
-            // ignore: use_build_context_synchronously
-            Navigator.of(context).pop();
-          },
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
-}
+
+  // ...existing code...
+
+  // ...existing code...
+
+  // ...existing code...
+
+  // ...existing code...
+
+  // ...existing code...
+
+  // ...existing code...
+

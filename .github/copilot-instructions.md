@@ -83,5 +83,12 @@ At each reply:
 - [Riverpod Docs](https://riverpod.dev/)
 - [Material 3](https://m3.material.io/)
 
+## Rules:
+- Directly patch the code so it works as intended.
+- Preserve all unrelated, working parts.
+- Apply only the minimal necessary changes.
+- Output the full, updated code with changes applied.
+- Clearly mark what was changed with short comments like // FIX or // UPDATED.
+- Do NOT output explanations first — show the fixed code immediately.
 ---
 For unclear or incomplete sections, request feedback and iterate. Always document only discoverable, enforced patterns—not aspirational practices.
