@@ -4,7 +4,7 @@ name: Flutter CI/CD
 on:
   push:
     branches: [ main, dev ]
-    tags: [ 'v*.*.*' ]
+    tags: [ 'v*.*.*' ] # merged into main push block
   pull_request:
     branches: [ main, dev ]
   release:

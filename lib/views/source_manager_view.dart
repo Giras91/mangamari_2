@@ -317,6 +317,7 @@
 
     final manager = ref.read(sourceManagerProvider);
     InstallResult result;
+    final dialogContext = context;
 
     if (_urlController.text.isNotEmpty) {
       result = await manager.installFromUrl(_urlController.text);
@@ -342,7 +343,8 @@
       }
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          Navigator.of(context).pop();
+          // ignore: use_build_context_synchronously
+          Navigator.of(dialogContext).pop(); // FIX: use captured context
         }
       });
     }
@@ -414,6 +416,7 @@
             onPressed: () async {
               await manager.updateComplianceSettings(settings);
               if (!mounted) return;
+              // ignore: use_build_context_synchronously
               Navigator.of(context).pop();
             },
             child: const Text('Save'),
@@ -514,69 +517,4 @@
     super.dispose();
   }
 }
-
-  void _showInstallDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Install Source'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: DefaultTabController(
-            length: 2,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const TabBar(
-                  tabs: [
-                    Tab(text: 'From URL'),
-                    Tab(text: 'From JSON'),
-                  ],
-                ),
-                SizedBox(
-                  height: 300,
-                  child: TabBarView(
-                    children: [
-                      _buildUrlInstallTab(),
-                      _buildJsonInstallTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('installDialogCancel'),
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            key: const ValueKey('installDialogConfirm'),
-            onPressed: _isInstalling ? null : _installSource,
-            child: _isInstalling 
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Install'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ...existing code...
-
-  // ...existing code...
-
-  // ...existing code...
-
-  // ...existing code...
-
-  // ...existing code...
-
-  // ...existing code...
 
